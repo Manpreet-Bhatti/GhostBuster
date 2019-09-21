@@ -24,7 +24,7 @@ class EnemyHandler(ObjectBase):
     def update(self, pressed_keys):
         if self.spawn_countdown.finished:
             self.spawn_countdown.restart()
-            self.add_object("Enemy", {}, -31, random.randint(0,
+            self.add_object("Pumpkin", "DoubleStackPumpkin", {}, -31, random.randint(0,
                                                              self.screen.get_height() - 32))
 
 
@@ -39,7 +39,6 @@ class Pumpkin(ObjectBase):
 
         self.angle = 0
 
-        self.drawable = self.rotate_object(self.image, self.angle - 90)
         self.velocity = 100
 
         self.scoreboard = self.get_all_type("Text")[0]     # type: Text
@@ -51,22 +50,17 @@ class Pumpkin(ObjectBase):
         self.move_angle_time(self.velocity)
 
     def oncollide(self, obj: 'ObjectBase'):
-        if obj.object_type == "Bullet":
+        if obj.object_type == "Ghost":
             self.delete(self)
             self.delete(obj)
 
-            self.change_score(100)
+            self.change_room("menu")
 
     def onscreenleave(self):
         self.delete(self)
-        self.change_score(-50)
 
     def draw(self):
         self.draw_to_screen(item=self.drawable)
-
-    def change_score(self, delta: int):
-        GlobalVariable.score += delta
-        self.scoreboard.set_text("Score: {}".format(GlobalVariable.score))
 
 
 class DoubleStackPumpkin(ObjectBase):
@@ -80,7 +74,6 @@ class DoubleStackPumpkin(ObjectBase):
 
         self.angle = 0
 
-        self.drawable = self.rotate_object(self.image, self.angle - 90)
         self.velocity = 100
 
         self.scoreboard = self.get_all_type("Text")[0]     # type: Text
