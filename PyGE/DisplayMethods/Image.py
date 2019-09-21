@@ -1,7 +1,7 @@
 import pygame
-
 from PyGE.DisplayMethods.DisplayBase import DisplayBase
 from PyGE.Globals.Cache import get_image
+import math
 
 
 class Image(DisplayBase):

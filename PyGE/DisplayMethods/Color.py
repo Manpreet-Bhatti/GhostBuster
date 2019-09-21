@@ -15,12 +15,6 @@ class Color(DisplayBase):
         self.color = color
         self.screen = screen
         self.w, self.h = width, height
-        self.angle = 0
-        self.surf = pygame.Surface((self.w, self.h))
-        self.surf.fill(self.color)
-        self.rotated = None
-
-        self.rotate(0)
 
     def draw(self, x ,y):
         """
@@ -28,8 +22,4 @@ class Color(DisplayBase):
         :param x: The x position
         :param y: The y position
         """
-        self.screen.blit(self.rotated, (x, y))
-
-    def rotate(self, radians):
-        self.angle += radians
-        self.rotated = pygame.transform.rotate(self.surf, self.angle)
+        pygame.draw.rect(self.screen, self.color, (x, y, self.w, self.h))

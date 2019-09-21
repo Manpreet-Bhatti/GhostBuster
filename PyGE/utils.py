@@ -1,10 +1,6 @@
 import pygame
-import math
 import PyGE.Globals.Constants as Constants
 from xmltodict import OrderedDict
-from math import log2, pow
-
-NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 def convert_color(color:str):
     """
@@ -21,9 +17,6 @@ def convert_color(color:str):
      :return: a valid RGB color tuple
      """
 
-    if type(color) is tuple and len(color) == 3:
-        return color
-
     def cmyk_to_rgb(vals:tuple):
         if type(vals) is int:
             return tuple(int(str(vals)[i:i + 2], 16) for i in (0, 2, 4))
@@ -38,8 +31,8 @@ def convert_color(color:str):
             b = rgb_scale * (1.0 - (y + k) / float(cmyk_scale))
             return r, g, b
 
-    if color.lower() in Constants.COLOR_NAMES:
-        color = Constants.COLOR_NAMES[color.lower()]
+    if color in Constants.COLOR_NAMES:
+        color = Constants.COLOR_NAMES[color]
 
     # TODO: MAKE THIS WAAAAAAAY MORE EFFICIENT
     # RGB variants
@@ -79,8 +72,6 @@ def get_optional(dic: dict, key: str, default, return_type:type=None, is_literal
         return default
 
     if return_type is not None:
-        if return_type is eval and val is None:
-            return None
         val = return_type(val)
     if return_type is int:
         val = round(float(val), 0)
@@ -236,43 +227,3 @@ def get_surface_center(surf: pygame.Surface):
     :return: the center point as a tuple (x, y)
     """
     return surf.get_width() / 2, surf.get_height() / 2
-
-
-def radians(deg):
-    """
-    Converts degrees to radians
-    :param deg: the degrees
-    :return: the value in radians
-    """
-    return deg * (math.pi / 180)
-
-
-def degrees(rad):
-    """
-    Converts radians to degrees
-    :param rad: the radians
-    :return: the value in degrees
-    """
-    return rad * (180 / math.pi)
-
-
-def rotate_point(point:tuple, center, angle):
-    x = math.cos(angle) * (point[0] - center[0]) - math.sin(angle) * (point[1] - center[1]) + center[0]
-    y = math.sin(angle) * (point[0] - center[0]) + math.cos(angle) * (point[1]- center[1]) + center[1]
-    return x, y
-
-
-def pitch_to_note(freq, a4=440):
-    """
-    Returns the note name of the provided frequency (ex. A#3, or C2)
-    :param freq: the frequency (in Hz)
-    :param a4: the frequency of A4 (set the tuning) Default is 440
-    :return: the note name of the specified frequency
-    """
-    if freq == 0:
-        return None
-    c0 = a4 * pow(2, -4.75)
-    h = round(12 * log2(freq / c0))
-    octave = h // 12
-    n = h % 12
-    return NOTE_NAMES[n] + str(octave)

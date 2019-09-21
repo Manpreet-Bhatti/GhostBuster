@@ -48,8 +48,6 @@ class Text(ObjectBase):
 
     def rebuild_text_object(self):
         self.text_object = self.font.render(self.text, self.antialiasing, self.color)
-        self.w, self.h = self.text_object.get_size()
-        self.recalculate_position()
 
     def draw(self):
         self.draw_to_screen(self.text_object)

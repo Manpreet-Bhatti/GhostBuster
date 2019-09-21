@@ -6,10 +6,9 @@ import numpy as np
 import pygame
 
 from PyGE.DisplayMethods.Color import Color, DisplayBase
-from PyGE.Globals.GlobalVariable import get_sys_var, new_thread, get_var, set_var
-from PyGE.BackgroundTasks import frequency_monitor
+from PyGE.Globals.GlobalVariable import get_sys_var
 from PyGE.Misc.Ticker import Ticker
-from PyGE.utils import get_mandatory, rect_a_touch_b, get_optional, point_in_rect, rect_a_in_b, get_surface_center, convert_color
+from PyGE.utils import get_mandatory, rect_a_touch_b, get_optional, point_in_rect
 
 
 class ObjectBase:
@@ -18,40 +17,34 @@ class ObjectBase:
         This is the object ALL objects MUST inherit from to be used in a room.
         This is the parent of ALL objects.
         :param screen: The screen to draw the object to
-        :param args: The dictionary of properties specified in the XML.
+        :param args: The dictionary of properties specified in the XML. NOTE: Any property defined in a tag, will have the '@' infront of it 
         :param parent: The room the object will live in 
         """
         self.screen = screen
-        self.args = self.modify_args(args)
+        self.args = args
         self.parent = parent
 
         self.angle = 0
 
-        # self.should_center_width = get_mandatory(args, "@x", str) == "c"
-        # self.should_center_height = get_mandatory(args, "@y", str) == "c"
+        self.should_center_width = get_mandatory(args, "@x", str) == "c"
+        self.should_center_height = get_mandatory(args, "@y", str) == "c"
 
-        self.locked = get_optional(args, "locked", "false")
+        self.locked = get_optional(args, "@locked", "false")
 
         self.screen_w, self.screen_h = self.screen.get_size()
 
         self.display = Color(screen, (255, 0, 255), 10, 10)
-        w, h = self.display.get_size()
+        self.w, self.h = self.display.get_size()
 
-        self.w = get_optional(args, "w", None)
-        self.h = get_optional(args, "h", None)
-        
-        if self.w is None:
-            self.w = w
-            
-        if self.h is None:
-            self.h = h
-            
-        self.positional_vars = {}
-        self.reload_vars()
+        if self.should_center_width:
+            self.x = self.center_width()
+        else:
+            self.x = get_mandatory(args, "@x", int)
 
-        self.x = None
-        self.y = None
-        self.recalculate_position()
+        if self.should_center_height:
+            self.y = self.center_height()
+        else:
+            self.y = get_mandatory(args, "@y", int)
 
         self.on_screen_cache = True
         self.on_mouse_over_cache = False
@@ -73,38 +66,6 @@ class ObjectBase:
         self.siblings = self.parent.props.array
 
         self.oncreate()
-
-        self.frequency_monitor_thread = None
-
-        self.zindex = 10
-
-    def reload_vars(self):
-        self.positional_vars = {
-            "sw": self.screen_w,
-            "sh": self.screen_h,
-            "cw": self.calculate_center(self.w)[0],
-            "ch": self.calculate_center(None, self.h)[1],
-            "mw": self.w,
-            "mh": self.h
-        }
-
-    def recalculate_position(self):
-        self.reload_vars()
-        self.x = self.evaluate_variables(get_mandatory(self.args, "x", str))
-        self.y = self.evaluate_variables(get_mandatory(self.args, "y", str))
-        
-    def evaluate_variables(self, data:str):
-        for key, val in self.positional_vars.items():
-            data = data.replace(key, str(val))
-        return eval(data)
-
-    def modify_args(self, args:dict):
-        """
-        This method provides you with onbe final chance to modify the arguements before they are used by the object
-        :param args: the current arguement dictionary. Note that items coming from XML will have the "@" sign before the key. Don't worry about this. 
-        :return: the modified arguement dictionary.
-        """
-        return args
 
     def center_width(self):
         """
@@ -129,8 +90,8 @@ class ObjectBase:
         :param w: the new width
         """
         self.w = w
-        # if self.should_center_width:
-        #     self.center_width()
+        if self.should_center_width:
+            self.center_width()
 
     def set_height(self, h:int):
         """
@@ -139,8 +100,8 @@ class ObjectBase:
         :param h: the new height
         """
         self.h = h
-        # if self.should_center_height:
-        #     self.center_height()
+        if self.should_center_height:
+            self.center_height()
 
     def set_display_method(self, method:'DisplayBase'):
         """
@@ -153,16 +114,9 @@ class ObjectBase:
     @property
     def is_onscreen(self):
         """
-        Returns if this object is completly on the screen
+        Returns if this object is in any way touching the screen
         """
         return rect_a_touch_b(self.rect, (0, 0, self.screen_w, self.screen_h))
-
-    @property
-    def is_touching_screen(self):
-        """
-        Returns if this object is completly on the screen
-        """
-        return rect_a_in_b(self.rect, (0, 0, self.screen_w, self.screen_h))
 
     @property
     def rect(self):
@@ -209,61 +163,6 @@ class ObjectBase:
         Gets this object's class name as a string
         """
         return self.__class__.__name__
-
-    def set_zindex(self, zindex):
-        """
-        Sets this object's zindex. The lower the zindex is, the further back it is drawn. Example: zindex 10 is drawn on top of zindex 1  
-        :param zindex: the zindex to use
-        """
-        self.zindex = zindex
-
-    def get_zindex(self):
-        """
-        Returns this object's current zindex
-        :return: the zindex
-        """
-        return self.zindex
-
-    def start_frequency_monitor(self):
-        """
-        Starts the frequency monitoring system. This is a thread which can not be stopped (yet)
-        To get the frequency of the primary audio input, use "self.get_var("current_pitch")"
-        This is accessable accross all objects, so DO NOT call this more than once!
-        """
-        self.frequency_monitor_thread = new_thread(frequency_monitor, "fm", True)
-
-    def get_var(self, name):
-        """
-        Gets a globally set variable
-        :param name: the name of the variable
-        :return: the value of the variable
-        """
-        return get_var(name)
-
-    def set_var(self, name, value):
-        """
-        Sets the value of a global variable
-        :param name: the name of the variable
-        :param value: the value of the variable
-        """
-        set_var(name, value)
-
-    def do_if_condition(self, condition:bool, action:callable, args=None):
-        """
-        Runs the specified function with specified arguements if the specified contition is True
-        :param condition: the condition to process
-        :param action: the reference to the functon to call if True
-        :param args: the arguements to call the function with
-        :return: if the action was taken
-        """
-        if args is None:
-            args = []
-        if condition:
-            action(*args)
-        return condition
-
-    def rotate_display_method(self, radians):
-        self.display.rotate(radians)
 
     def set_metadata(self, values:dict):
         """
@@ -362,7 +261,6 @@ class ObjectBase:
         self.ticker = Ticker()
 
     def system_update(self):
-        self.parent_update()
         self.time_delta = self.ticker.tick
 
     def move(self, x, y, fire_onscreen_event=True):
@@ -428,30 +326,6 @@ class ObjectBase:
             if me.contains_point(p):
                 return True
         return False
-
-    def calculate_center(self, width:int=None, height:int=None):
-        """
-        Calculates the x, y position to place the specified object in the center of the screen 
-        :param width: The width of the object to center (ommit and "None" will be returned for the "x" position)
-        :param height: The height of the object to center (ommit and "None" will be returned for the "y" position)
-        :return: the x, y position to place the object to center it
-        """
-        c = get_surface_center(self.screen)
-        w, h = None, None
-        if width is not None:
-            w = c[0] - (width / 2)
-        if height is not None:
-            h = c[1] - (height / 2)
-        return w, h
-
-    def run_func_in_sec(self, func:callable, delay:float, *args, **kwargs):
-        """
-        Runs the specified function after the specified delay
-        :param func: the reference to the function to run
-        :param delay: the delay in s
-        NOTE: after the delay, you may pass in poisional and named arguements which will be passed into the function which is run
-        """
-        self.parent.run_func_in_sec(func, delay, args, kwargs)
 
     def time_move(self, x_velocity:float, y_velocity:float):
         """
@@ -667,123 +541,6 @@ class ObjectBase:
         :param destanation: the single object to send the message to
         """
         self.multicast_message(message, [destanation])
-
-    def draw_rect(self, color, x:int, y:int, w:int, h:int, width:int=0):
-        """
-        Draws a rectangle on the screen
-        :param color: The color of the rectangle
-        :param x: the x position of the rectangle
-        :param y: the y position of the rectangle
-        :param w: the width of the rectangle
-        :param h: the height of the rectangle
-        :param width: the line thickness of the rectangle (0 to fill completly)
-        :return: the rectangle which surrounds this object (pygame rect)
-        """
-        return pygame.draw.rect(self.screen, convert_color(color), (x, y, w, h), width)
-
-    def draw_polygon(self, color, points:list, width:int=0):
-        """
-        Draws a polygon to the screen
-        :param color: The color of the polygon
-        :param points: the list of points (ex: [(x1, y1), (x2, y2), (x3, y3)] ) The first and last points will connect. Must have more than 3 points.
-        :param width: the line thickness of the polygon (0 to fill completly)
-        :return: the rectangle which surrounds this object (pygame rect)
-        """
-        return pygame.draw.polygon(self.screen, convert_color(color), points, width)
-
-    def draw_circle(self, color, x:int, y:int, radius:int, width:int=0):
-        """
-        Draws a circle to the screen
-        :param color: the color of the circle
-        :param x: the x position of the circle
-        :param y: the y position of the circle
-        :param radius: the radius of the circle
-        :param width: the line thickness of the circle (0 to fill completly)
-        :return: the rectangle which surrounds this object (pygame rect)
-        """
-        return pygame.draw.circle(self.screen, convert_color(color), (x, y), radius, width)
-
-    def draw_elipse(self, color, x:int, y:int, w:int, h:int, width:int=0):
-        """
-        Draws an elipse to the screen
-        :param color: the color of the circle
-        :param x: the x position of the elipse
-        :param y: the y position of the elipse
-        :param w: the width of the elipse
-        :param h: the height of the elipse
-        :param width: the line thickness of the elipse (0 to fill completly)
-        :return: the rectangle which surrounds this object (pygame rect)
-        """
-        return pygame.draw.ellipse(self.screen, convert_color(color), (x, y, w, h), width)
-
-    def draw_arc(self, color, x:int, y:int, w:int, h:int, angle1:float, angle2:float, width:int=1):
-        """
-        Draws an arc to the screen
-        :param color: the color of the arc
-        :param x: the x position of the arc
-        :param y: the y position of the arc
-        :param w: the width of the arc
-        :param h: the height of the arc
-        :param angle1: The starting angle in radians
-        :param angle2: The ending angle in radians
-        :param width: the line thickness of the arc
-        :return: the rectangle which surrounds this object (pygame rect)
-        """
-        return pygame.draw.arc(self.screen, convert_color(color), (x, y, w, h), angle1, angle2, width)
-
-    def draw_line(self, color, x1:int, y1:int, x2:int, y2:int, width:int=1):
-        """
-        Draws a line to the screen
-        :param color: the color of the line
-        :param x1: the x position of the line's starting point
-        :param y1: the y position of the line's starting point
-        :param x2: the x position of the line's ending point
-        :param y2: the y position of the line's ending point
-        :param width: the line thickness
-        :return: the rectangle which surrounds this object (pygame rect)
-        """
-        return pygame.draw.line(self.screen, convert_color(color), (x1, y1), (x2, y2), width)
-
-    def draw_lines(self, color, closed:bool, points:list, width:int=1):
-        """
-        Draws a series of lines to the screen
-        :param color: the color of the lines
-        :param closed: if the engine should draw an additional line between the first an last point
-        :param points: a list of points to be connected by lines (ex: [(x1, y1), (x2, y2), (x3, y3)] ) Must have more than 3 points.
-        :param width: the line thicknesses
-        :return: the rectangle which surrounds this object (pygame rect)
-        """
-        return pygame.draw.lines(self.screen, convert_color(color), closed, points, width)
-
-    def draw_aaline(self, color, x1: int, y1: int, x2: int, y2: int, width: int = 1):
-        """
-        Draws an antialiased line to the screen
-        :param color: the color of the line
-        :param x1: the x position of the line's starting point
-        :param y1: the y position of the line's starting point
-        :param x2: the x position of the line's ending point
-        :param y2: the y position of the line's ending point
-        :param width: the line thickness
-        :return: the rectangle which surrounds this object (pygame rect)
-        """
-        return pygame.draw.aaline(self.screen, convert_color(color), (x1, y1), (x2, y2), width)
-
-    def draw_aalines(self, color, closed: bool, points: list, width: int = 1):
-        """
-        Draws a series of antialiased lines to the screen
-        :param color: the color of the lines
-        :param closed: if the engine should draw an additional line between the first an last point
-        :param points: a list of points to be connected by lines (ex: [(x1, y1), (x2, y2), (x3, y3)] ) Must have more than 3 points.
-        :param width: the line thicknesses
-        :return: the rectangle which surrounds this object (pygame rect)
-        """
-        return pygame.draw.aalines(self.screen, convert_color(color), closed, points, width)
-
-    def parent_update(self):
-        """
-        This method is here in the event another update is needed (like a parent object)
-        """
-        pass
 
     def update(self, pressed_keys):
         """

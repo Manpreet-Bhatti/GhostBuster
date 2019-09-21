@@ -34,6 +34,3 @@ class DisplayBase:
         :return: height
         """
         return self.h
-
-    def rotate(self, radians):
-        pass

@@ -1,33 +1,6 @@
-import threading
-
 VARIABLES = {
-    "loaded": False,
-    "current_pitch": 0.0
+    "loaded": False
 }
-threads = []
-
-def new_thread(target:callable, name:str, start:bool, *args, **kwargs):
-    """
-    Spawns and returns a new thread (can not be killed)
-    Also adds the thread to the list of system threads used by the engine
-    :param target: the function to call for the thread
-    :param name: the thread's name
-    :param start: if the thread should be started when created
-    :param args: other positional arguements to run the function with
-    :param kwargs: other named arguements to run the function with
-    :return: the newly created thread
-    """
-    p = threading.Thread(
-        target=target,
-        name=name,
-        args=args,
-        kwargs=kwargs
-    )
-    p.setDaemon(True)
-    if start:
-        p.start()
-    threads.append(p)
-    return p
 
 def set_var(key, value):
     """
@@ -67,8 +40,7 @@ def show_vars():
 
 SYS_VARS = {
     "debug": False,
-    "debug-color": (255, 255, 255),
-    "audio-anaylasis-enabled": False
+    "debug-color": (255, 255, 255)
 }
 
 def set_sys_var(key, value):

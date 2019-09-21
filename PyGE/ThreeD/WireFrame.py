@@ -1,2 +1,0 @@
-class WireFrame:
-    pass
