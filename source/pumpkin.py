@@ -24,7 +24,7 @@ class EnemyHandler(ObjectBase):
     def update(self, pressed_keys):
         if self.spawn_countdown.finished:
             self.spawn_countdown.restart()
-            self.add_object("Enemy", {}, -31, random.randint(0,
+            self.add_object("Pumpkin", "DoubleStackPumpkin", {}, -31, random.randint(0,
                                                              self.screen.get_height() - 32))
 
 
@@ -73,7 +73,7 @@ class DoubleStackPumpkin(ObjectBase):
         self.w, self.h = self.image.get_size()
 
         self.angle = 0
-        
+
         self.velocity = 100
 
         self.scoreboard = self.get_all_type("Text")[0]     # type: Text
