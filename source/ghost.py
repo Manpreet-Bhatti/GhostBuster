@@ -1,10 +1,10 @@
 import pygame
 
-from PyGE.Objects.ObjectBase import ObjectBase
-from PyGE.Screens.Room import Room
-from PyGE.Globals.Cache import get_image
-from PyGE.Misc.AlarmClock import AlarmClock
-import PyGE.utils as utils
+from resources import PyGE.Objects.ObjectBase
+from resources.PyGE.Screens.Room import Room
+from resources.PyGE.Globals.Cache import get_image
+from resources.PyGE.Misc.AlarmClock import AlarmClock
+import resources.PyGE.utils as utils
 
 
 class Player(ObjectBase):
