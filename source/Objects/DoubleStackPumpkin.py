@@ -58,6 +58,8 @@ class DoubleStackPumpkin(ObjectBase):
                 self.delete(obj)
 
                 self.change_score(200)
+        if obj.object_type == "Ghost":
+            self.change_room("menu")
 
     def onscreenleave(self):
         self.delete(self)
