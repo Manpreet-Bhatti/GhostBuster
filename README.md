@@ -1,6 +1,6 @@
 # GhostJumpingGame
 
-Fight against the multiple waves of pumpkins and double stacked pumpkins with your ghost as you rise in score. But beware, one pumpkin that gets past under your nose, is a loss to you!
+Fight against the multiple waves of pumpkins and double stacked pumpkins with your ghost as you rise in score. Don't let the pumpkins get past you or you will lose points, and don't forget NOT to touch the evil pumpkins.
 
 To play, go into the directory (GhostBuster) and run python3 GhostBuster.py
 
