@@ -1,9 +1,9 @@
 <building>
     <room name="arenaSingle">
         <MenuImage x="0" y="0"/>
-        <EnemyHandler/>
-        <EnemyHandler2/>
-        <Player x="740" y="c" number="1"/>
+        <PumpkinHandler/>
+        <DoubleStackPumpkinHandler/>
+        <Ghost x="740" y="c" number="1"/>
         <Text x="5" y="5" font="Querround16" text="Score: 0"/>
     </room>
     <room name="menu">
