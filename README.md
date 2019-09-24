@@ -4,6 +4,6 @@ Fight against the multiple waves of pumpkins and double stacked pumpkins with yo
 
 To play, go into the directory (GhostBuster) and run python3 GhostBuster.py
 
-The controls are: W and S (up and down)
+The controls are: up arrow key, right arrow key, down arrow key, and left arrow key.
 
 ! IMPORTANT: go into GhostBuster/PyGE/Misc/ and open Computer.py - edit the file according to the comments given !
