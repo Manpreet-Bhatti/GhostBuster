@@ -33,12 +33,20 @@ class Ghost(ObjectBase):
     def update(self, pressed_keys):
         # print(len(self.siblings))
 
-        if (pressed_keys[pygame.K_w] == 1 and self.number == 1) or (pressed_keys[pygame.K_UP] == 1 and self.number == 2):
+        if (pressed_keys[pygame.K_UP] == 1 and self.number == 1):
             self.time_move(0, self.velocity)
             self.boundary_check()
 
-        if (pressed_keys[pygame.K_s] == 1 and self.number == 1) or (pressed_keys[pygame.K_DOWN] == 1 and self.number == 2):
+        if (pressed_keys[pygame.K_DOWN] == 1 and self.number == 1):
             self.time_move(0, -self.velocity)
+            self.boundary_check()
+
+        if (pressed_keys[pygame.K_RIGHT] == 1 and self.number == 1):
+            self.time_move(self.velocity, 0)
+            self.boundary_check()
+
+        if (pressed_keys[pygame.K_LEFT] == 1 and self.number == 1):
+            self.time_move(-self.velocity, 0)
             self.boundary_check()
 
         if self.shot_cool_down.finished:
