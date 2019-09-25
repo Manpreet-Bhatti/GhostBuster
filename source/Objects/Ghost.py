@@ -12,7 +12,7 @@ class Ghost(ObjectBase):
         ObjectBase.__init__(self, screen, args, parent)
 
         self.angle = 90
-        self.velocity = 100
+        self.velocity = 200
 
         self.number = self.get_mandatory_arguement("number", int)
 
